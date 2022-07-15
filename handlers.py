@@ -1,7 +1,8 @@
+from unicodedata import name
 from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
 from aiogram.dispatcher.filters import Text, Command
 
-from keyboards import keyboard, keyboard1, mouse_325, mouse_535
+from keyboards import keyboard, keyboard1, mouse_325, mouse_535, callback
 from main import bot, dp
 from config import CHAT_ID
 
@@ -25,11 +26,13 @@ async def show(message: Message):
     await message.answer(text="Купить или отенить", reply_markup=keyboard1)
 
 
-@dp.callback_query_handler(text_contains="mouse325")
-async def mouse325(call: CallbackQuery):
+@dp.callback_query_handler(callback.filter(name="mouse325"))
+async def mouse325(call: CallbackQuery, callback_data: dict):
     await call.answer(cache_time=60)
 
-    await call.message.answer("Купить", reply_markup=mouse_325)
+    price = callback_data.get("price")
+
+    await call.message.answer(f"Купить. Цена: {price}", reply_markup=mouse_325)
 
 
 @dp.callback_query_handler(text_contains="mouse535")
