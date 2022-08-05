@@ -128,21 +128,21 @@ async def send(message : types.Message):
             installation_crontab(grid_three="", grid_four="")
         await bot.send_message(message.from_user.id, "find_mobile на cron ↑↑↑")
     elif message.text == "Down kwork cron":
-        await bot.send_message(message.from_user.id, "↑↑↑", reply_markup=kb().row(b1, b2).row(b3, b4).row(b5, b6).row(b7, b8).row(b9, b10))
+        await bot.send_message(message.from_user.id, "↓↓↓", reply_markup=kb().row(b1, b2).row(b3, b4).row(b5, b6).row(b7, b8).row(b9, b10))
         await message.delete()
         if str(cron()[3])[0] == "#":
             installation_crontab(grid_three="#")
         else:
             installation_crontab(grid_three="#", grid_four="")
-        await bot.send_message(message.from_user.id, "kwork на cron ↑↑↑")
+        await bot.send_message(message.from_user.id, "Down kwork cron ↓↓↓")
     elif message.text == "Down find_mobile cron": 
-        await bot.send_message(message.from_user.id, "↑↑↑", reply_markup=kb().row(b1, b2).row(b3, b4).row(b5, b6).row(b7, b8).row(b9, b10))
+        await bot.send_message(message.from_user.id, "↓↓↓", reply_markup=kb().row(b1, b2).row(b3, b4).row(b5, b6).row(b7, b8).row(b9, b10))
         await message.delete()
         if str(cron()[2])[0] == "#":
             installation_crontab(grid_four="#")
         else:
             installation_crontab(grid_three="", grid_four="#")
-        await bot.send_message(message.from_user.id, "find_mobile на cron ↑↑↑")
+        await bot.send_message(message.from_user.id, "Down find_mobile cron ↓↓↓")
     elif message.text == "Default cron":
         await message.delete()
         installation_crontab()
