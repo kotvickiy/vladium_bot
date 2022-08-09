@@ -53,18 +53,19 @@ def kb():
     return kb_client
 
 
-b1 = KeyboardButton("Запустить kwork")
-b2 = KeyboardButton("Запустить find_mobile")
+b1 = KeyboardButton("Start kwork")
+b2 = KeyboardButton("Start find_mobile")
 b3 = KeyboardButton("Up kwork cron")
 b4 = KeyboardButton("Up find_mobile cron")
 b5 = KeyboardButton("Down kwork cron")
 b6 = KeyboardButton("Down find_mobile cron")
-b7 = KeyboardButton("Проверить")
-b8 = KeyboardButton("Перезагрузить")
-b9 = KeyboardButton("Меню")
+b7 = KeyboardButton("Verify crontab")
+b8 = KeyboardButton("Reboot server")
+b9 = KeyboardButton("Menu")
 b10 = KeyboardButton("Default cron")
 b11 = KeyboardButton("Out kwork")
 b12 = KeyboardButton("Out find_mobile")
+b13 = KeyboardButton("Clear")
 
 
 acl = (CHAT_ID, )
@@ -82,6 +83,19 @@ def verify_cron_and_install_button():
         return [b5, b4]
 
 
+async def verify(message):
+    if str(cron()[2])[0] == "#":
+        kwork = "DISABLE"
+    else:
+        kwork = "ENABLE"
+    if str(cron()[3])[0] == "#":
+        find_mobile = "DISABLE"
+    else:
+        find_mobile = "ENABLE"
+    new_btn = verify_cron_and_install_button()
+    await bot.send_message(message.from_user.id, f"kwork: {kwork}, find_mobile: {find_mobile}", reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
+
+
 @dp.message_handler(admin_only, content_types=['any'])
 async def handle_unwanted_users(message: types.Message):
     await bot.delete_message(message.chat.id, message.message_id)
@@ -95,45 +109,32 @@ async def commands_start(message : types.Message):
     await bot.send_message(message.from_user.id, "/start", reply_markup=kb().row(btn[0], btn[1]).row(b9))
 
 
-async def verify(message):
-    if str(cron()[2])[0] == "#":
-        kwork = "Выключен"
-    else:
-        kwork = "Включен"
-    if str(cron()[3])[0] == "#":
-        find_mobile = "Выключен"
-    else:
-        find_mobile = "Включен"
-    new_btn = verify_cron_and_install_button()
-    await bot.send_message(message.from_user.id, f"kwork: {kwork}, find_mobile: {find_mobile}", reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
-
-
 @dp.message_handler()
 async def send(message : types.Message):    
-    if message.text == "Запустить kwork":
-        await bot.send_message(message.from_user.id, "kwork запущен", reply_markup=ReplyKeyboardRemove())
+    if message.text == "Start kwork":
+        await bot.send_message(message.from_user.id, "kwork is starting...", reply_markup=ReplyKeyboardRemove())
         await message.delete()
         os.system('cd /home/vladium/code/kwork/ && /home/vladium/code/kwork/lin_venv3104/bin/python3 /home/vladium/code/kwork/main.py >> out.log 2>&1')
-        await bot.send_message(message.from_user.id, "kwork завершен")
+        await bot.send_message(message.from_user.id, "kwork end!")
         await verify(message)
-    elif message.text == "Запустить find_mobile":
-        await bot.send_message(message.from_user.id, "find_mobile запущен", reply_markup=ReplyKeyboardRemove())
+    elif message.text == "Start find_mobile":
+        await bot.send_message(message.from_user.id, "find_mobile is starting...", reply_markup=ReplyKeyboardRemove())
         await message.delete()
         os.system('cd /home/vladium/code/find_mobile/ && /home/vladium/code/find_mobile/lin_venv3104/bin/python3 /home/vladium/code/find_mobile/main.py >> out.log 2>&1')
-        await bot.send_message(message.from_user.id, "find_mobile завершен")
+        await bot.send_message(message.from_user.id, "find_mobile end!")
         await verify(message)
-    elif message.text == "Проверить":
+    elif message.text == "Verify crontab":
         await message.delete()
         await verify(message)
-    elif message.text == "Перезагрузить":
+    elif message.text == "Reboot server":
         await message.delete()
         sudoPassword = '241215'
         command = 'reboot'
         os.system('echo %s|sudo -S %s' % (sudoPassword, command))
-    elif message.text == "Меню":
+    elif message.text == "Menu":
         await message.delete()
         btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, "Меню", reply_markup=kb().row(b1, b2).row(btn[0], btn[1]).row(b7, b8).row(b11, b12).row(b10))
+        await bot.send_message(message.from_user.id, "Меню", reply_markup=kb().row(b1, b2).row(btn[0], btn[1]).row(b7, b8).row(b11, b12).row(b10, b13))
     elif message.text == "Up kwork cron":
         await message.delete()
         btn = verify_cron_and_install_button()
@@ -189,6 +190,14 @@ async def send(message : types.Message):
         installation_crontab()
         new_btn = verify_cron_and_install_button()
         await bot.send_message(message.from_user.id, "/start", reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
+    elif message.text == "Clear":
+        new_message_id = message.message_id
+        for i in range(100):
+            try:
+                await bot.delete_message(chat_id=message.from_user.id, message_id=new_message_id)
+            except Exception:
+                pass
+            new_message_id = new_message_id - 1
 
 
 executor.start_polling(dp, skip_updates=True)
