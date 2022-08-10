@@ -64,7 +64,7 @@ myselfserver = s.getsockname()[0]
 def out(project):
     try:
         with open(f"../{project}/out.log") as file:
-            return file.readlines()[-1].strip()
+            return file.read()
     except:
         return "no file"
 
