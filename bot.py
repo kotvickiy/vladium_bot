@@ -35,12 +35,20 @@ def edit_phone_list(in_line):
     with open(file) as read_file:
         lst_line = [i.strip().split(",") for i in read_file.readlines()]
 
+    if "plus" in in_line[1]:
+        line_plus = in_line[1].replace("plus", "+")
+    else:
+        line_plus = in_line[1]
+    
     for line in lst_line:
-        if line[0] == in_line[1]:
+        if line[0] == in_line[1] or line[0] == line_plus:
             flag = True
             if len(in_line) == 4:
                 line[1] = in_line[2]
                 line[2] = in_line[3]
+            elif len(in_line) == 3:
+                line[1] = in_line[2]
+                line[2] = int(in_line[2]) // 2
             elif len(in_line) == 2:
                 line[1] = 1000
                 line[2] = 100000
