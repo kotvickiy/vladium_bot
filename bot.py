@@ -77,6 +77,14 @@ def out(project):
         return "no file"
 
 
+def rm_out(project):
+    if os.path.exists(f"../{project}/out.log"):
+        os.system(f"rm ../{project}/out.log")
+        return f"out {project} deleted!"
+    else:
+        return "no file"
+
+
 def cron():
     return list(CronTab(user="vladium"))
 
@@ -113,6 +121,8 @@ b14 = KeyboardButton("Clear")
 b15 = KeyboardButton("Cancel")
 b16 = KeyboardButton("Samsung")
 b17 = KeyboardButton("Xiaomi")
+b18 = KeyboardButton("Rm kwork out")
+b19 = KeyboardButton("Rm find_mobile out")
 
 
 acl = (CHAT_ID, 5550131546)
@@ -181,7 +191,7 @@ async def send(message : types.Message):
     elif message.text == "Menu":
         await message.delete()
         btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, "Menu", reply_markup=kb().row(b1, b2).row(btn[0], btn[1]).row(b7, b8).row(b11, b12).row(b16, b17).row(b10, b13, b14))
+        await bot.send_message(message.from_user.id, "Menu", reply_markup=kb().row(b1, b2).row(btn[0], btn[1]).row(b7, b8).row(b11, b12).row(b16, b17).row(b18, b19).row(b10, b13, b14))
     elif message.text == "Up kwork cron":
         await message.delete()
         btn = verify_cron_and_install_button()
@@ -224,9 +234,19 @@ async def send(message : types.Message):
         await bot.send_message(message.from_user.id, "Down find_mobile cron ↓↓↓", reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
     elif message.text == "Out kwork":
         await message.delete()
-        out_find_mobile = out("kwork")
+        out_kwork = out("kwork")
         new_btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, out_find_mobile, reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
+        await bot.send_message(message.from_user.id, out_kwork, reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
+    elif message.text == "Rm kwork out":
+        await message.delete()
+        rm_kwork_out = rm_out("kwork")
+        new_btn = verify_cron_and_install_button()
+        await bot.send_message(message.from_user.id, rm_kwork_out, reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
+    elif message.text == "Rm find_mobile out":
+        await message.delete()
+        rm_find_mobile_out = rm_out("find_mobile")
+        new_btn = verify_cron_and_install_button()
+        await bot.send_message(message.from_user.id, rm_find_mobile_out, reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
     elif message.text == "Out find_mobile":
         await message.delete()
         out_find_mobile = out("find_mobile")
