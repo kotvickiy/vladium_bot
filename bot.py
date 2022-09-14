@@ -217,9 +217,9 @@ async def send(message : types.Message):
         btn = verify_cron_and_install_button()
         await bot.send_message(message.from_user.id, "↓↓↓", reply_markup=kb().row(btn[0], btn[1]).row(b9))
         if str(cron()[3])[0] == "#":
-            installation_crontab(grid_three="#")
+            installation_crontab(grid_three="# ")
         else:
-            installation_crontab(grid_three="#", grid_four="")
+            installation_crontab(grid_three="# ", grid_four="")
         new_btn = verify_cron_and_install_button()
         await bot.send_message(message.from_user.id, "Down kwork cron ↓↓↓", reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
     elif message.text == "Down find_mobile cron":
@@ -227,9 +227,9 @@ async def send(message : types.Message):
         btn = verify_cron_and_install_button()
         await bot.send_message(message.from_user.id, "↓↓↓", reply_markup=kb().row(btn[0], btn[1]).row(b9))
         if str(cron()[2])[0] == "#":
-            installation_crontab(grid_four="#")
+            installation_crontab(grid_four="# ")
         else:
-            installation_crontab(grid_three="", grid_four="#")
+            installation_crontab(grid_three="", grid_four="# ")
         new_btn = verify_cron_and_install_button()
         await bot.send_message(message.from_user.id, "Down find_mobile cron ↓↓↓", reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
     elif message.text == "Out kwork":
