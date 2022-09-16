@@ -20,6 +20,7 @@ import os
 import socket
 
 
+
 storage = MemoryStorage()
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot, storage=storage)
@@ -89,8 +90,8 @@ def cron():
     return list(CronTab(user="vladium"))
 
 
-def installation_crontab(grid_one="", grid_two="", grid_three="# ", grid_four="# "):
-    os.system(f'crontab -l > foocron; echo "{grid_one}@reboot /usr/bin/sleep 15; ssh vladium@{myselfserver} Xvfb &\n{grid_two}@reboot /usr/bin/sleep 20; cd /home/vladium/code/vladium_bot/ && /home/vladium/code/vladium_bot/lin_venv3104/bin/python3 /home/vladium/code/vladium_bot/bot.py >> out.log 2>&1\n{grid_three}*/10 * * * * cd /home/vladium/code/kwork/ && /home/vladium/code/kwork/lin_venv3104/bin/python3 /home/vladium/code/kwork/main.py >> out.log 2>&1\n{grid_four}*/10 * * * * cd /home/vladium/code/find_mobile/ && /home/vladium/code/find_mobile/lin_venv3104/bin/python3 /home/vladium/code/find_mobile/main.py >> out.log 2>&1" > foocron; crontab foocron; rm foocron')
+def installation_crontab():
+    os.system(f'crontab -l > foocron; echo "@reboot /usr/bin/sleep 15; ssh vladium@{myselfserver} Xvfb &\n@reboot /usr/bin/sleep 20; cd /home/vladium/code/vladium_bot/ && /home/vladium/code/vladium_bot/lin_venv3104/bin/python3 /home/vladium/code/vladium_bot/bot.py >> out.log 2>&1\n# */10 * * * * cd /home/vladium/code/kwork/ && /home/vladium/code/kwork/lin_venv3104/bin/python3 /home/vladium/code/kwork/main.py >> out.log 2>&1\n# */10 * * * * cd /home/vladium/code/find_mobile/ && /home/vladium/code/find_mobile/lin_venv3104/bin/python3 /home/vladium/code/find_mobile/main.py >> out.log 2>&1\n# */5 * * * * cd /home/vladium/code/xypher/ && /home/vladium/code/xypher/env/bin/python3 /home/vladium/code/xypher/main.py >> out.log 2>&1" > foocron; crontab foocron; rm foocron')
 
 
 try:
@@ -123,6 +124,11 @@ b16 = KeyboardButton("Samsung")
 b17 = KeyboardButton("Xiaomi")
 b18 = KeyboardButton("Rm kwork out")
 b19 = KeyboardButton("Rm find_mobile out")
+b20 = KeyboardButton("Up xypher cron")
+b21 = KeyboardButton("Down xypher cron")
+b22 = KeyboardButton("Start xypher")
+b23 = KeyboardButton("Out xypher")
+b24 = KeyboardButton("Rm xypher out")
 
 
 acl = (CHAT_ID, 5550131546)
@@ -130,14 +136,21 @@ admin_only = lambda message: message.from_user.id not in acl
 
 
 def verify_cron_and_install_button():
-    if str(cron()[2])[0] == "#" and str(cron()[3])[0] == "#":
-        return [b3, b4]
-    elif str(cron()[2])[0] == "*" and str(cron()[3])[0] == "*":
-        return [b5, b6]
-    elif str(cron()[2])[0] == "#" and str(cron()[3])[0] == "*":
-        return [b3, b6]
-    elif str(cron()[2])[0] == "*" and str(cron()[3])[0] == "#":
-        return [b5, b4]
+    res = []
+    cr = cron()
+    if str(cr[2])[0] == "#":
+        res.append(b3)
+    else:
+        res.append(b5)
+    if str(cr[3])[0] == "#":
+        res.append(b4)
+    else:
+        res.append(b6)
+    if str(cr[4])[0] == "#":
+        res.append(b20)
+    else:
+        res.append(b21)
+    return res
 
 
 async def verify(message):
@@ -149,8 +162,26 @@ async def verify(message):
         find_mobile = "DISABLE"
     else:
         find_mobile = "ENABLE"
+    if str(cron()[4])[0] == "#":
+        xypher = "DISABLE"
+    else:
+        xypher = "ENABLE"
     new_btn = verify_cron_and_install_button()
-    await bot.send_message(message.from_user.id, f"kwork: {kwork}, find_mobile: {find_mobile}", reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
+    await bot.send_message(message.from_user.id, f"kwork: {kwork}, find_mobile: {find_mobile}, xypher: {xypher}", reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
+
+
+def switch_cron(num_line, switch):
+    os.system(f'crontab -l > foocron;')
+    with open("./foocron") as file:
+        text = file.readlines()
+    if switch == "up":
+        text[num_line] = text[num_line][2:]
+    elif switch == "down":
+        text[num_line] = "# " + text[num_line]
+    with open("./foocron", "w") as f:
+        for i in text:
+            f.write(f"{i.strip()}\n")
+    os.system(f'crontab foocron; rm foocron')
 
 
 @dp.message_handler(admin_only, content_types=['any'])
@@ -163,7 +194,7 @@ async def handle_unwanted_users(message: types.Message):
 async def commands_start(message : types.Message):
     await message.delete()
     btn = verify_cron_and_install_button()
-    await bot.send_message(message.from_user.id, "/start", reply_markup=kb().row(btn[0], btn[1]).row(b9))
+    await bot.send_message(message.from_user.id, "/start", reply_markup=kb().row(btn[0], btn[1], btn[2]).row(b9))
 
 
 @dp.message_handler()
@@ -180,6 +211,14 @@ async def send(message : types.Message):
         os.system('cd /home/vladium/code/find_mobile/ && /home/vladium/code/find_mobile/lin_venv3104/bin/python3 /home/vladium/code/find_mobile/main.py >> out.log 2>&1')
         await bot.send_message(message.from_user.id, "find_mobile end!")
         await verify(message)
+
+    elif message.text == "Start xypher":
+        await bot.send_message(message.from_user.id, "xypher is starting...", reply_markup=ReplyKeyboardRemove())
+        await message.delete()
+        os.system('cd /home/vladium/code/xypher/ && /home/vladium/code/xypher/env/bin/python3 /home/vladium/code/xypher/main.py >> out.log 2>&1')
+        await bot.send_message(message.from_user.id, "xypher end!")
+        await verify(message)
+
     elif message.text == "Verify crontab":
         await message.delete()
         await verify(message)
@@ -188,75 +227,96 @@ async def send(message : types.Message):
         sudoPassword = '241215'
         command = 'reboot'
         os.system('echo %s|sudo -S %s' % (sudoPassword, command))
+
     elif message.text == "Menu":
         await message.delete()
         btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, "Menu", reply_markup=kb().row(b1, b2).row(btn[0], btn[1]).row(b7, b8).row(b11, b12).row(b16, b17).row(b18, b19).row(b10, b13, b14))
+        await bot.send_message(message.from_user.id, "Menu", reply_markup=kb().row(b1, b2, b22).row(btn[0], btn[1], btn[2]).row(b11, b12, b23).row(b18, b19, b24).row(b7, b8).row(b16, b17).row(b10, b13, b14))
+    
     elif message.text == "Up kwork cron":
         await message.delete()
         btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, "↑↑↑", reply_markup=kb().row(btn[0], btn[1]).row(b9))
-        if str(cron()[3])[0] == "#":
-            installation_crontab(grid_three="")
-        else:
-            installation_crontab(grid_three="", grid_four="")
+        await bot.send_message(message.from_user.id, "↑↑↑", reply_markup=kb().row(btn[0], btn[1], btn[2]).row(b9))
+        switch_cron(2, "up")
         new_btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, "kwork на cron ↑↑↑", reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
-    elif message.text == "Up find_mobile cron":
-        await message.delete()
-        btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, "↑↑↑", reply_markup=kb().row(btn[0], btn[1]).row(b9))
-        if str(cron()[2])[0] == "#":
-            installation_crontab(grid_four="")
-        else:
-            installation_crontab(grid_three="", grid_four="")
-        new_btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, "find_mobile на cron ↑↑↑", reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
+        await bot.send_message(message.from_user.id, "kwork на cron ↑↑↑", reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
     elif message.text == "Down kwork cron":
         await message.delete()
         btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, "↓↓↓", reply_markup=kb().row(btn[0], btn[1]).row(b9))
-        if str(cron()[3])[0] == "#":
-            installation_crontab(grid_three="# ")
-        else:
-            installation_crontab(grid_three="# ", grid_four="")
+        await bot.send_message(message.from_user.id, "↓↓↓", reply_markup=kb().row(btn[0], btn[1], btn[2]).row(b9))
+        switch_cron(2, "down")
         new_btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, "Down kwork cron ↓↓↓", reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
+        await bot.send_message(message.from_user.id, "Down kwork cron ↓↓↓", reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
+    
+    elif message.text == "Up find_mobile cron":
+        await message.delete()
+        btn = verify_cron_and_install_button()
+        await bot.send_message(message.from_user.id, "↑↑↑", reply_markup=kb().row(btn[0], btn[1], btn[2]).row(b9))
+        switch_cron(3, "up")
+        new_btn = verify_cron_and_install_button()
+        await bot.send_message(message.from_user.id, "find_mobile на cron ↑↑↑", reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
     elif message.text == "Down find_mobile cron":
         await message.delete()
         btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, "↓↓↓", reply_markup=kb().row(btn[0], btn[1]).row(b9))
-        if str(cron()[2])[0] == "#":
-            installation_crontab(grid_four="# ")
-        else:
-            installation_crontab(grid_three="", grid_four="# ")
+        await bot.send_message(message.from_user.id, "↓↓↓", reply_markup=kb().row(btn[0], btn[1], btn[2]).row(b9))
+        switch_cron(3, "down")
         new_btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, "Down find_mobile cron ↓↓↓", reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
+        await bot.send_message(message.from_user.id, "Down find_mobile cron ↓↓↓", reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
+    
+    elif message.text == "Up xypher cron":
+        await message.delete()
+        btn = verify_cron_and_install_button()
+        await bot.send_message(message.from_user.id, "↑↑↑", reply_markup=kb().row(btn[0], btn[1], btn[2]).row(b9))
+        switch_cron(4, "up")
+        new_btn = verify_cron_and_install_button()
+        await bot.send_message(message.from_user.id, "xypher на cron ↑↑↑", reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
+    elif message.text == "Down xypher cron":
+        await message.delete()
+        btn = verify_cron_and_install_button()
+        await bot.send_message(message.from_user.id, "↓↓↓", reply_markup=kb().row(btn[0], btn[1], btn[2]).row(b9))
+        switch_cron(4, "down")
+        new_btn = verify_cron_and_install_button()
+        await bot.send_message(message.from_user.id, "Down find_mobile cron ↓↓↓", reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
+        
     elif message.text == "Out kwork":
         await message.delete()
         out_kwork = out("kwork")
         new_btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, out_kwork, reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
+        await bot.send_message(message.from_user.id, out_kwork, reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
     elif message.text == "Rm kwork out":
         await message.delete()
         rm_kwork_out = rm_out("kwork")
         new_btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, rm_kwork_out, reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
-    elif message.text == "Rm find_mobile out":
-        await message.delete()
-        rm_find_mobile_out = rm_out("find_mobile")
-        new_btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, rm_find_mobile_out, reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
+        await bot.send_message(message.from_user.id, rm_kwork_out, reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
+
     elif message.text == "Out find_mobile":
         await message.delete()
         out_find_mobile = out("find_mobile")
         new_btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, out_find_mobile, reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
+        await bot.send_message(message.from_user.id, out_find_mobile, reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
+    elif message.text == "Rm find_mobile out":
+        await message.delete()
+        rm_find_mobile_out = rm_out("find_mobile")
+        new_btn = verify_cron_and_install_button()
+        await bot.send_message(message.from_user.id, rm_find_mobile_out, reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
+    
+    elif message.text == "Out xypher":
+        await message.delete()
+        out_xypher = out("xypher")
+        new_btn = verify_cron_and_install_button()
+        await bot.send_message(message.from_user.id, out_xypher, reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
+    elif message.text == "Rm xypher out":
+        await message.delete()
+        rm_xypher = rm_out("xypher")
+        new_btn = verify_cron_and_install_button()
+        await bot.send_message(message.from_user.id, rm_xypher, reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
+
     elif message.text == "Default cron":
         await message.delete()
         installation_crontab()
         new_btn = verify_cron_and_install_button()
-        await bot.send_message(message.from_user.id, "/start", reply_markup=kb().row(new_btn[0], new_btn[1]).row(b9))
+        await bot.send_message(message.from_user.id, "/start", reply_markup=kb().row(new_btn[0], new_btn[1], new_btn[2]).row(b9))
+
     elif message.text == "Samsung":
         with open("../find_mobile/samsung.csv") as file:
             file = file.read()
