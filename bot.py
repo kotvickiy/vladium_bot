@@ -29,7 +29,7 @@ async def voice_message(message: types.Message):
             audio_data = recognizer.record(source)
         text = recognizer.recognize_google(audio_data, language="ru-RU")
     except Exception:
-        text = 'Что-то пошло не так. Попробуйте еще раз.'
+        text = 'Что-то пошло не так. Попробуй еще раз.'
     await message.answer(text)
 
 
