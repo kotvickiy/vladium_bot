@@ -1,20 +1,23 @@
 import io
-import asyncio
 import speech_recognition as sr
 
-from aiogram import Bot, Dispatcher, F, types
+from aiogram import Bot, F, Router, types
 from aiogram.filters import CommandStart
 from pydub import AudioSegment
 
+import app.keyboards as kb
+
 from config import TG_TOKEN
+from app.function import text_processor
+from app.ai import ai
 
 
 bot = Bot(token=TG_TOKEN)
-dp = Dispatcher()
+router = Router()
 recognizer = sr.Recognizer()
 
 
-@dp.message(F.voice)
+@router.message(F.voice)
 async def voice_message(message: types.Message):
     try:
         voice_file = await bot.get_file(message.voice.file_id)
@@ -28,25 +31,17 @@ async def voice_message(message: types.Message):
         with sr.AudioFile(wav_stream) as source:
             audio_data = recognizer.record(source)
         text = recognizer.recognize_google(audio_data, language="ru-RU")
-    except Exception:
+    except Exception as ex:
+        print(ex)
         text = 'Что-то пошло не так. Попробуй еще раз.'
-    await message.answer(text)
+    await message.answer(ai(text))
 
 
-@dp.message(CommandStart())
+@router.message(CommandStart())
 async def command_start_handler(message: types.Message) -> None:
-    await message.answer("Отправь мне голосовое сообщение, и я попробую его расшифровать.")
+    await message.answer("Отправь мне голосовое сообщение или выбери меню.", reply_markup=kb.main)
 
 
-@dp.message(F.voice)
-async def voice_message_handler(message: types.Message):
-    voice = message.voice
-    await voice_message(voice)
-
-
-async def main() -> None:
-    await dp.start_polling(bot)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
+@router.message(F.text == 'Меню')
+async def menu_handler(message: types.Message):
+    await message.answer("Меню", reply_markup=kb.settings)
